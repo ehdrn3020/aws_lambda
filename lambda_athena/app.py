@@ -5,7 +5,7 @@ from common import common
 
 def lambda_handler(event, context):
     BUCKET = common.MASTER_FOLDER
-    print(BUCKET)
+
     # create lambda_athena table
 
     # drop lambda_athena table
