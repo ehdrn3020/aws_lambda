@@ -53,7 +53,7 @@ def lambda_handler(event, context):
         function.set_location_with_path(session, db, table, s3_path)
 
         # add & drop partition
-        partition = f"{user_no='99845326', user_account='123-11020-2022'"}
+        partition = f"user_no='99845326', user_account='123-11020-2022'"
         function.add_partition(session, db, table, partition)
         function.drop_partition(session, db, table, partition)
 
