@@ -37,15 +37,30 @@ def lambda_handler(event, context):
                 'type': ['string', 'integer', 'string', 'double']
             }
         }
-        partition = "`user_no` string,`shop_no` bigint"
-        PARTITION_HISTORY = "`mall_id` string, `shop_no` bingint, `dt` string"
+        partition = "`user_no` bigint,`user_account` string"
         str_columns = ''
         for idx, column in enumerate(table_columns['users']['column']):
             type = table_columns[table]['type'][idx]
             str_columns += '`{}` {},'.format(column, type)
+        str_columns = str_columns[0:-1]
         function.create_table(session, db, table, target_date, str_columns, partition)
+
         # drop lambda_athena table
-        function.drop_table()
+        function.drop_table(session, db, table)
+
+        # alter set s3 location
+        s3_path = f's3://your-bucket/{table}/{target_date}'
+        function.set_location_with_path(session, db, table, s3_path)
+
+        # add & drop partition
+        partition = f"{user_no='99845326', user_account='123-11020-2022'"}
+        function.add_partition(session, db, table, partition)
+        function.drop_partition(session, db, table, partition)
+
+        # after input date s3 file to s3 path, execution
+        # relocate partitions
+        function.msck_repair_table(session, db, table)
+
         return {
             'statusCode': 200,
             'body': json.dumps('Succuess')
