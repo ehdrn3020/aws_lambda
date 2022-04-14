@@ -1,5 +1,5 @@
 import time
-from . import common
+from common import common
 
 def run_query(session, DB, query, value=False):
     start = time.time()
@@ -8,6 +8,7 @@ def run_query(session, DB, query, value=False):
     print("{}, {} : {}".format(str(runtime), str(queryResult), query))
     if (queryResult == False):
         raise Exception(query)
+    # if True, return query result rows
     if (value == True):
         return queryResult
 
@@ -15,11 +16,13 @@ def dml_query_results(session, query, database, wait = True):
     location, result = query_results(session, query, database, wait)
     return result
 
+def get_var_char_values(d):
+    return [obj['VarCharValue'] for obj in d['Data']]
+
 def query_results(session, query, database, wait=True):
     client = session.client('lambda_athena')
-
     print(query)
-    ## This function executes the query and returns the query execution ID
+    # this function executes the query and returns the query execution ID
     response_query_execution_id = client.start_query_execution(
         QueryString=query,
         QueryExecutionContext={
@@ -52,7 +55,7 @@ def query_results(session, query, database, wait=True):
             elif status == 'SUCCEEDED':
                 location = response_get_query_details['QueryExecution']['ResultConfiguration']['OutputLocation']
 
-                ## Function to get output results
+                # function to get output results
                 response_query_result = client.get_query_results(
                     QueryExecutionId=response_query_execution_id['QueryExecutionId']
                 )
@@ -62,10 +65,8 @@ def query_results(session, query, database, wait=True):
                 if len(response_query_result['ResultSet']['Rows']) > 1:
                     header = response_query_result['ResultSet']['Rows'][0]
                     rows = response_query_result['ResultSet']['Rows'][1:]
-
                     header = [obj['VarCharValue'] for obj in header['Data']]
                     result = [dict(zip(header, get_var_char_values(row))) for row in rows]
-
                     return location, result
                 else:
                     return location, None
