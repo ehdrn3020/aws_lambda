@@ -28,7 +28,7 @@ def lambda_handler(event, context):
         query_result = function.select_table(session, db, table, target_date)
         for row in query_result:
             key_column = row['column1']+'_'+row['column2']
-            print("get column1+2: ",key_column)
+            print("get column1+2: ", key_column)
 
         # create table
         table_columns = {

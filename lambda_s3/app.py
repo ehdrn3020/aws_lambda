@@ -14,11 +14,14 @@ bucket = common.BUCEKT
 
 def lambda_handler(event, context):
     try:
+        # get trigger
+        bucket = event['Records'][0]['s3']['bucket']['name']
 
+        # get s3 list objects
 
-        # create athena table
+        # put s3 file
 
-        # drop lambda_athena table
+        # delte s3 file
 
         return {
             'statusCode': 200,
@@ -27,5 +30,5 @@ def lambda_handler(event, context):
 
     except Exception as e:
         print(e)
-        send_sns("lambda athean:", e)
+        send_sns("lambda s3:", e)
         raise e
