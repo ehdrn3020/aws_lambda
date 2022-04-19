@@ -1,12 +1,18 @@
 import json
 import sys
 import os.path
+import boto3
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import pytz
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from common import common
 from common import send_sns
+from . import function
 
+# set global variable
+session = boto3.Session()
 KST = pytz.timezone('Asia/Seoul')
 db = common.DB
 table = common.TABLE
@@ -14,14 +20,20 @@ bucket = common.BUCEKT
 
 def lambda_handler(event, context):
     try:
-        # get trigger
-        bucket = event['Records'][0]['s3']['bucket']['name']
 
-        # get s3 list objects
+        # set datetime KST(UTC+9)
+        now = datetime.now(KST)
+        target_date = (now - relativedelta(days=1)).strftime('%Y-%m-%d')
+
+        # get s3 list objects, filtered date
+        function.get_s3_file_list(session, bucket, table, target_date)
 
         # put s3 file
+        function.put_s3_file(session, bucket, table, target_date)
 
-        # delte s3 file
+        # delete s3 file
+
+        # s3 retention
 
         return {
             'statusCode': 200,
