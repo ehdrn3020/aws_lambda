@@ -23,8 +23,10 @@ def lambda_handler(event, context):
         lmb.invoke(FunctionName="your_lambda_function", InvocationType='Event', Payload=json.dumps(body))
 
         # set glue trigger
-
-
+        gle = session.client('glue')
+        run_gle = gle.start_job_run(JobName="your_glue_function")
+        get_gle = gle.get_job_run(JobName="your_glue_function", RunId=run_gle['JobRunId'])
+        print("Job Status : ", get_gle['JobRun']['JobRunState'])
 
         return {
             'statusCode': 200,
