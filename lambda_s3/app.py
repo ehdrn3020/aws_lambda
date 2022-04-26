@@ -26,14 +26,14 @@ def lambda_handler(event, context):
         target_date = (now - relativedelta(days=1)).strftime('%Y-%m-%d')
 
         # get s3 list objects, filtered date
-        function.get_s3_file_list(session, bucket, table, target_date)
+        get_s3_list = function.get_s3_file_list(session, bucket, table, target_date)
 
         # put s3 file
         function.put_s3_file(session, bucket, table, target_date)
 
         # delete s3 file
-
-        # s3 retention
+        for path in get_s3_list:
+            function.delete_s3_file(session, bucket, path)
 
         return {
             'statusCode': 200,
