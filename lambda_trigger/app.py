@@ -21,6 +21,8 @@ def lambda_handler(event, context):
                 "user_info": [{"region": "seoul", "phone": "123-1231-2312"}]}
         lmb = session.client(service_name='lambda', region_name="ap-northeast-2")
         lmb.invoke(FunctionName="your_lambda_function", InvocationType='Event', Payload=json.dumps(body))
+        ## get data other lambda
+        # user_no = event.get('user_no', 0)
 
         # set glue trigger
         gle = session.client('glue')

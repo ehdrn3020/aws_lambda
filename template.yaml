@@ -4,6 +4,23 @@ Description: >
   LamdaProject
   Sample SAM Template for LamdaProject
 
+# Distinguish operate, develope enviroment
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+
+Mappings:
+  EnvMapping:
+    dev:
+      CommonLayer: arn:aws:lambda:ap-northeast-2:567567567567:layer:common_aws:2
+      LambdaRole: arn:aws:iam::567567567567:role/service-role/my-lambda-etl-role-dev
+      ProjectBatchTime: cron(10 20 * * ? *)
+    op:
+      CommonLayer: arn:aws:lambda:ap-northeast-2:123412341234:layer:common_aws:2
+      LambdaRole: arn:aws:iam::123412341234:role/service-role/my-lambda-etl-role
+      ProjectBatchTime: cron(10 15 * * ? *)
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -11,9 +28,30 @@ Globals:
     MemorySize: 128
     Tracing: Active
     Layers:
-      - 'arn:aws:lambda:ap-northeast-2:123412341234:layer:common_aws:2'
+      - !FindInMap [EnvMapping, !Ref Env, CommonLayer]
+#      - 'arn:aws:lambda:ap-northeast-2:123412341234:layer:common_aws:2'
 
 Resources:
+  CommonAws:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ./common_aws
+      CompatibleRuntimes:
+        - python3.9
+        - python3.8
+      LayerName: common_aws
+      RetentionPolicy: Retain
+
+  CommonAwsDev:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ./common_aws_dev
+      CompatibleRuntimes:
+        - python3.9
+        - python3.8
+      LayerName: common_aws_dev
+      RetentionPolicy: Retain
+
   LambdaAthena:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -25,12 +63,14 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 600
-      Role: 'arn:aws:iam::123412341234:role/my-lambda-etl-role'
+      Role: !FindInMap [EnvMapping, !Ref Env, LambdaRole]
+#      'arn:aws:iam::123412341234:role/my-lambda-etl-role'
       Events:
         Schedule1:
           Type: Schedule
           Properties:
-            Schedule: cron(0 23 ? * SUN *)
+            Schedule: !FindInMap [EnvMapping, !Ref Env, Cafe24BatchTime]
+#            cron(0 23 ? * SUN *)
 
   LambdaS3:
     Type: AWS::Serverless::Function
@@ -43,7 +83,7 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 600
-      Role: 'arn:aws:iam::123412341234:role/my-lambda-etl-role'
+      Role: !FindInMap [EnvMapping, !Ref Env, LambdaRole
       Events:
         DightyAppinstallEvent:
           Type: S3
@@ -70,14 +110,4 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 600
-      Role: 'arn:aws:iam::123412341234:role/my-lambda-etl-role'
-
-  CommonAws:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      ContentUri: ./common_aws
-      CompatibleRuntimes:
-        - python3.9
-        - python3.8
-      LayerName: common_aws
-      RetentionPolicy: Retain
+      Role: !FindInMap [EnvMapping, !Ref Env, LambdaRole

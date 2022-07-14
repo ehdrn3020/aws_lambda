@@ -28,3 +28,22 @@ def delete_s3_file(session, bucket, path):
 
     for obj in bucket_name.objects.filter(Prefix=path):
         s3.Object(bucket_name.name, obj.key).delete()
+
+def copy_s3_file():
+    s3 = boto3.client('s3')
+    bucket = 'dighty-collection'
+    bucket_session = boto3.resource('s3').Bucket(bucket)
+
+    src_info = "table/site/ymdh=2022071117/type=mobile"
+    dst_info = "table/site/ymdh=2022071117/type=pc"
+
+    file_exist = s3.list_objects_v2(Bucket=bucket, Prefix=f"{src_info}")
+    for file in file_exist['Contents']:
+        key = file['Key']
+        file_name = key.split('/')[-1]
+        print(file_name)
+        copy_source = {
+            'Bucket': bucket,
+            'Key': key
+        }
+        bucket_session.copy(copy_source, f"{dst_info}/{file_name}")
