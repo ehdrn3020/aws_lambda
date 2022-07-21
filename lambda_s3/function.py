@@ -5,7 +5,7 @@ def get_s3_file_list(session, bucket, table, target_date):
     file_list = []
 
     try:
-        list_obj = s3.list_objects(Bucket=common.BUCEKT, Prefix=f's3://{bucket}/{table}/{target_date}')['Contents']
+        list_obj = s3.list_objects(Bucket=common.BUCEKT, Prefix=f'{table}/{target_date}')['Contents']
         for path in list_obj:
             dt = path['Key'].split('/')[-2] # date='2022-04-19'
             if f'date={target_date}' == dt:
